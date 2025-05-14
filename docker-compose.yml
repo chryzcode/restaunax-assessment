@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: 'postgresql://user:password@db:5432/restaunax'
+    depends_on:
+      - db
+  frontend:
+    build: ./frontend
+    ports:
+      - '3001:5000'
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaunax
+    ports:
+      - '5432:5432'
