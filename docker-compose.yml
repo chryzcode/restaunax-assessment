@@ -6,17 +6,39 @@ services:
       - '3000:3000'
     environment:
       DATABASE_URL: 'postgresql://user:password@db:5432/restaunax'
+      NODE_ENV: 'development'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npx prisma generate &&
+             npm start"
+
   frontend:
     build: ./frontend
     ports:
       - '3001:5000'
+    environment:
+      VITE_API_URL: 'http://localhost:3000'
+    depends_on:
+      - backend
+
   db:
-    image: postgres:13
+    image: postgres:13-alpine
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: restaunax
     ports:
       - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d restaunax"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
